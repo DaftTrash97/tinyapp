@@ -11,6 +11,14 @@ const urlDatabase = {
 
 app.use(express.urlencoded({ extended: true }));
 
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  if (urlDatabase.hasOwnProperty(id)) {
+    delete urlDatabase[id];
+    res.redirect("/urls");
+  }
+});
+
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id]
