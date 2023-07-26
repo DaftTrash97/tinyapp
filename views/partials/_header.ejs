@@ -11,20 +11,20 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (username) { %>
+    <% if (user) { %>
       <div class="navbar-text">
-        Welcome, <%= username %>!
+        Welcome, <%= user.email %>!
       </div>
       <form class="form-inline" method="POST" action="/logout">
         <button type="submit" class="btn btn-primary mb-2">Logout</button>
       </form>
-      <% } else { %>
-        <form class="form-inline" method="POST" action="/login">
-          <div class="form-group mx-sm-3 mb-2">
-            <input type="text" class="form-control" name="username" placeholder="Username" required>
-          </div>
-          <button type="submit" class="btn btn-primary mb-2">Login</button>
-        </form>
-        <% } %>
+    <% } else { %>
+      <form class="form-inline" method="POST" action="/login">
+        <div class="form-group mx-sm-3 mb-2">
+          <input type="text" class="form-control" name="username" placeholder="Username" required>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Login</button>
+      </form>
+    <% } %>
   </nav>
 </header>
