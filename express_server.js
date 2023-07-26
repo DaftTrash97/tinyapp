@@ -13,7 +13,37 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+  user3RandomID: {
+    id: "user3RandomID",
+    email: "user3@example.com",
+    password: "fruity-pebles",
+  },
+};
+
 app.use(express.urlencoded({ extended: true }));
+
+app.post("/register", (req,res) =>{
+  const newUserId = generateRandomString();
+  const { email, password } = req.body;
+  users[newUserId] = {
+    id: newUserId,
+    email: email,
+    password: password
+  };
+  res.cookie("userId", newUserId);
+  res.redirect("/urls");
+});
 
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
@@ -41,6 +71,11 @@ app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[id];
     res.redirect("/urls");
   }
+}); 
+
+app.get("/register", (req, res) => {
+  const templateVars= { username: req.cookies["username"] };
+  res.render("register", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
