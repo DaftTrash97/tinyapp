@@ -33,7 +33,7 @@ const users = {
 
 app.use(express.urlencoded({ extended: true }));
 
-app.post("/register", (req,res) =>{
+app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (email === "" || password === "") {
     return res.status(400).send("Email and password can not be empty.");
@@ -47,7 +47,6 @@ app.post("/register", (req,res) =>{
   if (emailAlreadyUsed) {
     return res.status(400).send("Email alreay in use.");
   }
-  
   const newUserId = generateRandomString();
   users[newUserId] = {
     id: newUserId,
@@ -60,13 +59,27 @@ app.post("/register", (req,res) =>{
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const { username } = req.body;
-  res.cookie('username', username);
+  if (email === "" || password === "") {
+    return res.status(400).send("Email and password cannot be empty.");
+  }
+  let user;
+  for (const userId in users) {
+    if (users.hasOwnProperty(userId) && users[userId].email === email) {
+      user = users[userId];
+    }
+  }
+  if (!user) {
+    return res.status(403).send("No user with that email found.");
+  }
+  if (user.password !== password) {
+    return res.status(403).send("Incorrect password.");
+  }
+  res.cookie('user_id', user.id);
   res.redirect('/urls');
 });
 
@@ -85,14 +98,17 @@ app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[id];
     res.redirect("/urls");
   }
-}); 
+});
 
-app.get("/login", (req,res) => {
-  res.render("login")
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: req.user,
+  };
+  res.render("login", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const templateVars= { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("register", templateVars);
 });
 
@@ -116,19 +132,19 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:id", (req, res) =>{
-  const templateVars = { 
+app.get("/urls/:id", (req, res) => {
+  const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    user: users[req.cookies["user_id"]] 
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase 
+    urls: urlDatabase
   };
   res.render("urls_index", templateVars);
 });
