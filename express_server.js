@@ -34,8 +34,21 @@ const users = {
 app.use(express.urlencoded({ extended: true }));
 
 app.post("/register", (req,res) =>{
-  const newUserId = generateRandomString();
   const { email, password } = req.body;
+  if (email === "" || password === "") {
+    return res.status(400).send("Email and password can not be empty.");
+  }
+  let emailAlreadyUsed = false;
+  for (const userId in users) {
+    if (users.hasOwnProperty(userId) && users[userId].email === email) {
+      emailAlreadyUsed = true;
+    }
+  }
+  if (emailAlreadyUsed) {
+    return res.status(400).send("Email alreay in use.");
+  }
+  
+  const newUserId = generateRandomString();
   users[newUserId] = {
     id: newUserId,
     email: email,
@@ -46,7 +59,7 @@ app.post("/register", (req,res) =>{
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect('/urls');
 });
 
