@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 
 app.use(cookieParser());
 
@@ -35,9 +36,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
+  console.log("Received data from form:", email, password);
+
   if (email === "" || password === "") {
     return res.status(400).send("Email and password can not be empty.");
   }
+  const hashedPassword = bcrypt.hashSync(password, 10);
   let emailAlreadyUsed = false;
   for (const userId in users) {
     if (users.hasOwnProperty(userId) && users[userId].email === email) {
@@ -51,8 +55,9 @@ app.post("/register", (req, res) => {
   users[newUserId] = {
     id: newUserId,
     email: email,
-    password: password
+    password: hashedPassword
   };
+  console.log("Updated users object:", users);
   res.cookie("user_id", newUserId);
   res.redirect("/urls");
 });
@@ -76,11 +81,14 @@ app.post("/login", (req, res) => {
   if (!user) {
     return res.status(403).send("No user with that email found.");
   }
-  if (user.password !== password) {
-    return res.status(403).send("Incorrect password.");
-  }
+  bcrypt.compare(password, user.password, (isPasswordValid) => {
+    if (!isPasswordValid) {
+      return res.status(403).send("Incorrect password.");
+    }
+
   res.cookie('user_id', user.id);
   res.redirect('/urls');
+  });
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -176,5 +184,4 @@ function generateRandomString() {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
 
