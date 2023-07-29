@@ -2,11 +2,15 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['DioBrando'],
+}));
 
+app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -58,7 +62,7 @@ app.post("/register", (req, res) => {
     password: hashedPassword
   };
   console.log("Updated users object:", users);
-  res.cookie("user_id", newUserId);
+  req.session.user_id = newUserId;
   res.redirect("/urls");
 });
 
@@ -86,7 +90,7 @@ app.post("/login", (req, res) => {
       return res.status(403).send("Incorrect password.");
     }
 
-  res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
   res.redirect('/urls');
   });
 });
@@ -109,14 +113,14 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: req.user,
-  };
+  const templateVars = { 
+    user: users[req.session.user_id],
+   };
   res.render("login", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session.user_id] };
   res.render("register", templateVars);
 });
 
@@ -151,7 +155,7 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -184,4 +188,3 @@ function generateRandomString() {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
