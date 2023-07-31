@@ -113,6 +113,9 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  if (req.session.user_id) {
+    return res.redirect("/urls");
+  }
   const templateVars = { 
     user: users[req.session.user_id],
    };
@@ -120,6 +123,9 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if (req.session.user_id) {
+    return res.redirect("/urls");
+  }
   const templateVars = { user: users[req.session.user_id] };
   res.render("register", templateVars);
 });
