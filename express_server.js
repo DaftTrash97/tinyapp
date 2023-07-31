@@ -144,13 +144,22 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!req.session.user_id) {
+    return res.redirect('/login');
+  }
   const templateVars = {
     user: users[req.cookies["user_id"]],
   };
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:id", (req, res) => {
+app.get("/urls/:id", (req, res) => { 
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+
+  if (!longURL) {
+    return res.status(404).send("URL not found.");
+  }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
@@ -160,6 +169,9 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  if (!req.session.user_id) {
+    return res.status(401).send("You must have an account to shorten urls.");
+  }
   const templateVars = {
     user: users[req.session.user_id],
     urls: urlDatabase
