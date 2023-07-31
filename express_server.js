@@ -5,6 +5,8 @@ const PORT = 8080; // default port 8080
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 
+const { getUserByEmail } = require("./helpers");
+
 app.use(cookieSession({
   name: 'session',
   keys: ['DioBrando'],
@@ -45,16 +47,11 @@ app.post("/register", (req, res) => {
   if (email === "" || password === "") {
     return res.status(400).send("Email and password can not be empty.");
   }
+  const user = getUserByEmail(email, users);
+  if (user) {
+    return res.status(400).send("Email already in use.");
+  }
   const hashedPassword = bcrypt.hashSync(password, 10);
-  let emailAlreadyUsed = false;
-  for (const userId in users) {
-    if (users.hasOwnProperty(userId) && users[userId].email === email) {
-      emailAlreadyUsed = true;
-    }
-  }
-  if (emailAlreadyUsed) {
-    return res.status(400).send("Email alreay in use.");
-  }
   const newUserId = generateRandomString();
   users[newUserId] = {
     id: newUserId,
@@ -76,12 +73,7 @@ app.post("/login", (req, res) => {
   if (email === "" || password === "") {
     return res.status(400).send("Email and password cannot be empty.");
   }
-  let user;
-  for (const userId in users) {
-    if (users.hasOwnProperty(userId) && users[userId].email === email) {
-      user = users[userId];
-    }
-  }
+  const user = getUserByEmail(email, users);
   if (!user) {
     return res.status(403).send("No user with that email found.");
   }
@@ -116,9 +108,9 @@ app.get("/login", (req, res) => {
   if (req.session.user_id) {
     return res.redirect("/urls");
   }
-  const templateVars = { 
+  const templateVars = {
     user: users[req.session.user_id],
-   };
+  };
   res.render("login", templateVars);
 });
 
@@ -126,7 +118,9 @@ app.get("/register", (req, res) => {
   if (req.session.user_id) {
     return res.redirect("/urls");
   }
-  const templateVars = { user: users[req.session.user_id] };
+  const templateVars = {
+    user: users[req.session.user_id],
+  };
   res.render("register", templateVars);
 });
 
@@ -148,7 +142,7 @@ app.get("/urls/new", (req, res) => {
     return res.redirect('/login');
   }
   const templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
   };
   res.render("urls_new", templateVars);
 });
@@ -163,7 +157,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    user: users[req.cookies["user_id"]]
+    user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
 });
@@ -190,6 +184,15 @@ app.get("/hello", (req, res) => {
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
+// const getUserByEmail = function(email, database) {
+//   for (const userId in database) {
+//     if (database.hasOwnProperty(userId) && database[userId].email === email) {
+//       return database[userId];
+//     }
+//   }
+//   return null;
+// };
 
 function generateRandomString() {
   const alphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
