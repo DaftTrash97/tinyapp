@@ -64,7 +64,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect('/login');
 });
 
@@ -104,6 +104,13 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
+app.post("/urls", (req, res) => {
+  const { longURL } = req.body;
+  const id = generateRandomString();
+  urlDatabase[id] = longURL;
+  res.redirect(`/urls/${id}`);
+});
+
 app.get("/login", (req, res) => {
   if (req.session.user_id) {
     return res.redirect("/urls");
@@ -130,12 +137,6 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.post("/urls", (req, res) => {
-  const { longURL } = req.body;
-  const id = generateRandomString();
-  urlDatabase[id] = longURL;
-  res.redirect(`/urls/${id}`);
-});
 
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
