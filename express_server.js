@@ -111,12 +111,23 @@ app.post("/urls/:id/delete", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
+    // User is not logged in
     return res.status(401).send("You need an account to shorten URLs.");
   }
+
   const { longURL } = req.body;
+  if (!longURL) {
+    // Empty URL submitted
+    const templateVars = {
+      user: users[req.session.user_id],
+      error: "URL cannot be empty.",
+    };
+    return res.render("urls_new", templateVars);
+  }
+
   const id = generateRandomString();
-  const userID = req.session.user_id; 
-  urlDatabase[id] = { longURL, userID }; 
+  const userID = req.session.user_id;
+  urlDatabase[id] = { longURL, userID };
   res.redirect(`/urls/${id}`);
 });
 
@@ -161,25 +172,39 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => { 
   const id = req.params.id;
-  const longURL = urlDatabase[id];
-  if (!longURL) {
+  const user = users[req.session.user_id];
+  const url = urlDatabase[id];
+  if (!user) {
+    return res.status(401).send("You need to log in to access this page.");
+  }
+  if (!url) {
     return res.status(404).send("URL not found.");
   }
+  if (url.userID !== req.session.user_id) {
+    return res.status(403).send("This is not the URL you are looking for.");
+  }
   const templateVars = {
+    user: users[req.session.user_id],
+    longURL: url.longURL,
     id: id,
-    longURL: longURL,
-    user: users[req.session.user_id]
+    urls: urlDatabase,
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls", (req, res) => {
   if (!req.session.user_id) {
-    return res.status(401).send("You need an account to shorten URLs.");
+    const templateVars = {
+      user: null,
+      urls: {},
+    };
+    return res.render("urls_index", templateVars);
   }
+
+  const filteredURLs = urlsForUser(req.session.user_id);
   const templateVars = {
     user: users[req.session.user_id],
-    urls: urlDatabase
+    urls: filteredURLs,
   };
   res.render("urls_index", templateVars);
 });
@@ -204,6 +229,16 @@ app.get("/", (req, res) => {
 //   }
 //   return null;
 // };
+
+function urlsForUser(id) {
+  const filteredURLs = {};
+  for (const urlId in urlDatabase) {
+    if (urlDatabase[urlId].userID === id) {
+      filteredURLs[urlId] = urlDatabase[urlId];
+    }
+  }
+  return filteredURLs;
+}
 
 function generateRandomString() {
   const alphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

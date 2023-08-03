@@ -13,26 +13,28 @@
 
   <body>
     <%- include('partials/_header') %>
-    <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">
-          Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
-        </p>
-        <form method="post" action="/update/<%= id %>">
-          <div class="form-group">
-            <label for="updatedURL">Update Long URL:</label>
-            <input
-              type="text"
-              class="form-control"
-              id="updatedURL"
-              name="updatedURL"
-              value="<%= longURL %>"
-              required
-            />
-      </div>
-      <div class="card-footer text-muted"></div>
+    <div class="container mt-5">
+      <h3>TinyURL for: <%= longURL %></h3>
+      <p>
+        Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
+      </p>
+      <% if (typeof error !== 'undefined') { %>
+        <p class="text-danger"><%= error %></p>
+      <% } %>
+      <form method="post" action="/urls/<%= id %>">
+        <div class="form-group">
+          <label for="updatedURL">Update Long URL:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="updatedURL"
+            name="updatedURL"
+            value="<%= urls[id].longURL %>"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Update URL</button>
+      </form>
     </div>
     <!-- Bootstrap JS -->
     <script

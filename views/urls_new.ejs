@@ -20,23 +20,24 @@
 
   <body>
     <%- include('partials/_header') %>
-
-    <main style="margin: 1em;">
-      <h3>Create TinyURL</h3>
-      <form class="form-inline" action="/urls" method="POST">
-        <div class="form-group mb-2">
-          <label for="longURL">Enter a URL:</label>
+    <div class="container mt-5">
+      <% if (typeof error !== 'undefined') { %>
+        <p class="text-danger"><%= error %></p>
+      <% } %>
+      <form method="post" action="/urls">
+        <div class="form-group">
+          <label for="longURL">Enter Long URL:</label>
           <input
-            class="form-control"
             type="text"
+            class="form-control"
+            id="longURL"
             name="longURL"
-            placeholder="http://"
-            style="width: 300px; margin: 1em"
+            required
           />
-          <button type="submit" class="btn btn-primary">Submit</button>
         </div>
+        <button type="submit" class="btn btn-primary">Shorten URL</button>
       </form>
-    </main>
+    </div>
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
