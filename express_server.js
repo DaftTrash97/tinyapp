@@ -16,8 +16,14 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "user2RandomID",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "userRandomID",
+  },
 };
 
 const users = {
@@ -81,7 +87,6 @@ app.post("/login", (req, res) => {
     if (!isPasswordValid) {
       return res.status(403).send("Incorrect password.");
     }
-
   req.session.user_id = user.id;
   res.redirect('/urls');
   });
@@ -91,7 +96,7 @@ app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const { updatedURL } = req.body;
   if (urlDatabase.hasOwnProperty(id)) {
-    urlDatabase[id] = updatedURL;
+    urlDatabase[id].longURL = updatedURL;
     res.redirect("/urls");
   }
 });
@@ -105,9 +110,13 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  if (!req.session.user_id) {
+    return res.status(401).send("You need an account to shorten URLs.");
+  }
   const { longURL } = req.body;
   const id = generateRandomString();
-  urlDatabase[id] = longURL;
+  const userID = req.session.user_id; 
+  urlDatabase[id] = { longURL, userID }; 
   res.redirect(`/urls/${id}`);
 });
 
@@ -133,10 +142,12 @@ app.get("/register", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id]
+  const longURL = urlDatabase[id] ? urlDatabase[id].longURL : null;
+  if (!longURL) {
+    return res.status(404).send("URL not found.");
+  }
   res.redirect(longURL);
 });
-
 
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
@@ -151,13 +162,12 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => { 
   const id = req.params.id;
   const longURL = urlDatabase[id];
-
   if (!longURL) {
     return res.status(404).send("URL not found.");
   }
   const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    id: id,
+    longURL: longURL,
     user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
@@ -165,7 +175,7 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/urls", (req, res) => {
   if (!req.session.user_id) {
-    return res.status(401).send("You must have an account to shorten urls.");
+    return res.status(401).send("You need an account to shorten URLs.");
   }
   const templateVars = {
     user: users[req.session.user_id],
