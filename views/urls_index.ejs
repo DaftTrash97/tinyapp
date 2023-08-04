@@ -15,37 +15,41 @@
   <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h3>My URLs</h3>
-      <% if (Object.keys(urls).length === 0) { %>
+      <% if (Object.keys(urls).length===0) { %>
         <p>No URLS to display</p>
-      <% } else { %>
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">Short URL ID</th>
-              <th scope="col">Long URL</th>
-              <th scope="col">Actions</th>
-              <th scope="col">Edit</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% for (let id in urls) { %>
-            <tr>
-              <td><%= id %></td>
-              <td><%= urls[id].longURL %></td>
-              <td>
-                <form method="POST" action="/urls/<%= id %>/delete">
-                  <button type="submit" class="'btn btn-danger">Delete</button>
-                </form>
-              </td>
-              <td>
-                <a href="/urls/<%= id %>" class="btn btn-primary">Edit</a>
-              </td>
-            </tr>
-            <% } %>
-          </tbody>
-        </table>
-        <a href="#" class="btn btn-primary">Shorten New URL</a>
-      <% } %>
+        <% } else { %>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Short URL ID</th>
+                <th scope="col">Long URL</th>
+                <th scope="col">Actions</th>
+                <th scope="col">Edit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let id in urls) { %>
+                <tr>
+                  <td>
+                    <%= id %>
+                  </td>
+                  <td>
+                    <%= urls[id].longURL %>
+                  </td>
+                  <td>
+                    <form method="POST" action="/urls/<%= id %>/delete">
+                      <button type="submit" class="'btn btn-danger">Delete</button>
+                    </form>
+                  </td>
+                  <td>
+                    <a href="/urls/<%= id %>" class="btn btn-primary">Edit</a>
+                  </td>
+                </tr>
+                <% } %>
+            </tbody>
+          </table>
+          <a href="#" class="btn btn-primary">Shorten New URL</a>
+          <% } %>
     </main>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

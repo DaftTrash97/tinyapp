@@ -87,8 +87,8 @@ app.post("/login", (req, res) => {
     if (!isPasswordValid) {
       return res.status(403).send("Incorrect password.");
     }
-  req.session.user_id = user.id;
-  res.redirect('/urls');
+    req.session.user_id = user.id;
+    res.redirect('/urls');
   });
 });
 
@@ -170,7 +170,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.get("/urls/:id", (req, res) => { 
+app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const user = users[req.session.user_id];
   const url = urlDatabase[id];

@@ -1,10 +1,10 @@
-const getUserByEmail = function(email, database) {
-    for (const userId in database) {
-      if (database.hasOwnProperty(userId) && database[userId].email === email) {
-        return database[userId];
-      }
+const getUserByEmail = function (email, database) {
+  for (const userId in database) {
+    if (database.hasOwnProperty(userId) && database[userId].email === email) {
+      return database[userId];
     }
-    return undefined;
-  };
+  }
+  return undefined;
+};
 
-  module.exports = { getUserByEmail };
+module.exports = { getUserByEmail };
